@@ -10,6 +10,13 @@ import os
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
+# Ensure Playwright browsers are installed (for Streamlit Cloud)
+import subprocess
+try:
+    subprocess.run(["playwright", "install", "chromium"], check=True)
+except Exception as e:
+    print(f"Error installing playwright: {e}")
+
 # Load env vars
 load_dotenv()
 
