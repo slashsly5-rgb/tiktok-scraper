@@ -106,8 +106,41 @@ class TikTokScraper:
         # Remove duplicates
         video_links = list(set(video_links))
         
+        # --- FALLBACK: HASHTAG SEARCH ---
         if not video_links:
-            print("No videos found, taking debug screenshot...")
+            print("Main search blocked. Trying Hashtag Page fallback...")
+            try:
+                # Construct hashtag URL (remove spaces)
+                tag = keyword.replace(" ", "")
+                tag_url = f"https://www.tiktok.com/tag/{tag}"
+                print(f"Navigating to {tag_url}")
+                
+                await page.goto(tag_url)
+                await asyncio.sleep(2)
+                
+                # Scroll a bit
+                await page.evaluate("window.scrollTo(0, 500)")
+                await asyncio.sleep(2)
+                
+                # Wait for video links
+                try:
+                    await page.wait_for_selector('a[href*="/video/"]', timeout=15000)
+                except: pass
+                
+                # Extract again
+                elements = await page.query_selector_all('a[href*="/video/"]')
+                for el in elements:
+                    href = await el.get_attribute('href')
+                    if href and "/video/" in href:
+                        video_links.append(href)
+                        
+                video_links = list(set(video_links))
+                
+            except Exception as e:
+                print(f"Hashtag fallback failed: {e}")
+
+        if not video_links:
+            print("No videos found after fallback, taking debug screenshot...")
             await page.screenshot(path="search_debug.png")
             
         await page.close()
