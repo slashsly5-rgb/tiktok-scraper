@@ -51,16 +51,23 @@ class TikTokScraper:
         print(f"Navigating to {url}")
         await page.goto(url)
         
-        # Handle "Log in to search" Modal
+        # Handle "Log in to search" Modal - Aggressive Strategy
         try:
-            await asyncio.sleep(2) # Wait for modal to potentially animate in
+            await asyncio.sleep(3) # Wait for modal to fully render
             
-            # Common selectors for the close button on TikTok modals
+            # 1. Try Escape Key (Most robust)
+            print("Trying Escape key...")
+            await page.keyboard.press("Escape")
+            await asyncio.sleep(1)
+            
+            # 2. Try clicking the "X" button with various selectors
             close_selectors = [
                 '[data-e2e="modal-close-inner-button"]',
                 '[data-e2e="modal-close"]',
                 'button[aria-label="Close"]',
-                'div[role="dialog"] button'
+                'div[role="dialog"] button',
+                'svg[class*="StyledCloseIcon"]',
+                '#login-modal-close'
             ]
             
             for selector in close_selectors:
@@ -68,7 +75,11 @@ class TikTokScraper:
                     print(f"Login modal detected. Closing with {selector}...")
                     await page.click(selector)
                     await asyncio.sleep(1)
-                    break
+            
+            # 3. Try clicking outside the modal (Backdrop)
+            # Usually the top-left corner (10, 10) is safe if the modal is centered
+            await page.mouse.click(10, 10)
+            
         except Exception as e:
             print(f"Error handling modal: {e}")
 
