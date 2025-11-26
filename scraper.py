@@ -60,6 +60,7 @@ class TikTokScraper:
             await page.wait_for_selector('a[href*="/video/"]', timeout=30000)
         except Exception as e:
             print(f"Search timeout or error: {e}")
+            await page.screenshot(path="search_debug.png")
             await page.close()
             return []
             
@@ -72,6 +73,11 @@ class TikTokScraper:
                 
         # Remove duplicates
         video_links = list(set(video_links))
+        
+        if not video_links:
+            print("No videos found, taking debug screenshot...")
+            await page.screenshot(path="search_debug.png")
+            
         await page.close()
         return video_links[:limit]
 

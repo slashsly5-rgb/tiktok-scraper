@@ -56,6 +56,8 @@ async def run_scraper(keyword, limit, headless):
         
         if not video_urls:
             st.error("No videos found. Try a different keyword.")
+            if os.path.exists("search_debug.png"):
+                st.image("search_debug.png", caption="Debug: What the scraper saw")
             return []
             
         status_text.text(f"Found {len(video_urls)} videos. Starting scrape...")
