@@ -51,6 +51,27 @@ class TikTokScraper:
         print(f"Navigating to {url}")
         await page.goto(url)
         
+        # Handle "Log in to search" Modal
+        try:
+            await asyncio.sleep(2) # Wait for modal to potentially animate in
+            
+            # Common selectors for the close button on TikTok modals
+            close_selectors = [
+                '[data-e2e="modal-close-inner-button"]',
+                '[data-e2e="modal-close"]',
+                'button[aria-label="Close"]',
+                'div[role="dialog"] button'
+            ]
+            
+            for selector in close_selectors:
+                if await page.is_visible(selector):
+                    print(f"Login modal detected. Closing with {selector}...")
+                    await page.click(selector)
+                    await asyncio.sleep(1)
+                    break
+        except Exception as e:
+            print(f"Error handling modal: {e}")
+
         try:
             # Scroll to trigger load
             await page.evaluate("window.scrollTo(0, 500)")
