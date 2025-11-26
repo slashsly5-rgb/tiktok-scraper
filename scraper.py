@@ -13,7 +13,11 @@ class TikTokScraper:
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(
             headless=self.headless,
-            args=['--disable-blink-features=AutomationControlled']
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--no-sandbox',
+                '--disable-dev-shm-usage'
+            ]
         )
         self.context = await self.browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -36,38 +40,38 @@ class TikTokScraper:
         if self.playwright:
             await self.playwright.stop()
 
-    async def search_videos(self, keyword, limit=5):
+    async def search_videos(self, keyword, limit=3):
+        if not self.context:
+            await self.start()
+            
         page = await self.context.new_page()
-        encoded_keyword = urllib.parse.quote(keyword)
+        encoded_keyword = keyword.replace(" ", "%20")
         url = f"https://www.tiktok.com/search?q={encoded_keyword}"
         
         print(f"Navigating to {url}")
         await page.goto(url)
         
-        # Wait for results to load
-        video_links = []
-        # Try to find any links to videos if the specific container fails
         try:
-            await page.wait_for_selector('a[href*="/video/"]', timeout=10000)
-        except:
-            print("Timeout waiting for video links")
-            # Debug logic...
-            await page.screenshot(path="debug_search_timeout.png")
-            return []
-
-        while len(video_links) < limit:
-            elements = await page.query_selector_all('a[href*="/video/"]')
-            for el in elements:
-                href = await el.get_attribute('href')
-                if href and '/video/' in href and href not in video_links:
-                    video_links.append(href)
-                    if len(video_links) >= limit:
-                        break
+            # Scroll to trigger load
+            await page.evaluate("window.scrollTo(0, 500)")
+            await asyncio.sleep(2)
             
-            if len(video_links) < limit:
-                await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                await asyncio.sleep(2)
-        
+            # Wait longer for results (30s)
+            await page.wait_for_selector('a[href*="/video/"]', timeout=30000)
+        except Exception as e:
+            print(f"Search timeout or error: {e}")
+            await page.close()
+            return []
+            
+        elements = await page.query_selector_all('a[href*="/video/"]')
+        video_links = []
+        for el in elements:
+            href = await el.get_attribute('href')
+            if href and "/video/" in href:
+                video_links.append(href)
+                
+        # Remove duplicates
+        video_links = list(set(video_links))
         await page.close()
         return video_links[:limit]
 
