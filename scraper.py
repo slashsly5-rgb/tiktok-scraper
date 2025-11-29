@@ -91,10 +91,8 @@ class TikTokScraper:
             # Wait longer for results (30s)
             await page.wait_for_selector('a[href*="/video/"]', timeout=30000)
         except Exception as e:
-            print(f"Search timeout or error: {e}")
-            await page.screenshot(path="search_debug.png")
-            await page.close()
-            return []
+            print(f"Main search timeout or error: {e}")
+            # Do NOT return here, let it fall through to the fallback!
             
         elements = await page.query_selector_all('a[href*="/video/"]')
         video_links = []
