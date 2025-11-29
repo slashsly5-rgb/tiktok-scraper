@@ -109,20 +109,6 @@ if start_btn:
                         with col1:
                             if vid.get('thumbnail'):
                                 st.image(vid['thumbnail'], use_container_width=True)
-                            else:
-                                st.markdown("No Thumbnail")
-                            st.markdown(f"[Watch Video]({vid['url']})")
-                            
-                        with col2:
-                            st.markdown("#### 📊 Stats")
-                            stats = vid.get('stats', {})
-                            s_col1, s_col2 = st.columns(2)
-                            s_col1.metric("Views", stats.get('views', 'N/A'))
-                            s_col2.metric("Likes", stats.get('likes', 'N/A'))
-                            
-                            st.markdown("#### 🏷️ Hashtags")
-                            tags = vid.get('hashtags', [])
-                            if tags:
                                 st.markdown(" ".join([f"`#{t}`" for t in tags]))
                             else:
                                 st.text("No hashtags")

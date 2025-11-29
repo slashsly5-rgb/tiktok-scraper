@@ -88,8 +88,8 @@ class TikTokScraper:
             await page.evaluate("window.scrollTo(0, 500)")
             await asyncio.sleep(2)
             
-            # Wait longer for results (30s)
-            await page.wait_for_selector('a[href*="/video/"]', timeout=30000)
+            # Wait longer for results (15s - optimized)
+            await page.wait_for_selector('a[href*="/video/"]', timeout=15000)
         except Exception as e:
             print(f"Main search timeout or error: {e}")
             # Do NOT return here, let it fall through to the fallback!
@@ -158,20 +158,45 @@ class TikTokScraper:
                 # Random delay to mimic human
                 await asyncio.sleep(random.uniform(2, 5))
                 
+                # Handle "Log in to search" Modal - Aggressive Strategy (Same as search)
+                try:
+                    await asyncio.sleep(2)
+                    # 1. Try Escape Key
+                    await page.keyboard.press("Escape")
+                    await asyncio.sleep(1)
+                    
+                    # 2. Try clicking the "X" button
+                    close_selectors = [
+                        '[data-e2e="modal-close-inner-button"]',
+                        '[data-e2e="modal-close"]',
+                        'button[aria-label="Close"]',
+                        'div[role="dialog"] button',
+                        'svg[class*="StyledCloseIcon"]',
+                        '#login-modal-close'
+                    ]
+                    for selector in close_selectors:
+                        if await page.is_visible(selector):
+                            await page.click(selector)
+                            await asyncio.sleep(1)
+                    
+                    # 3. Try clicking outside
+                    await page.mouse.click(10, 10)
+                except: pass
+
                 # Wait for load
                 try:
                     await page.wait_for_load_state('networkidle', timeout=10000)
-                except:
-                    pass
+                except: pass
+
+                # Capture Screenshot for UI
+                import base64
+                screenshot_bytes = await page.screenshot()
+                data['screenshot_base64'] = base64.b64encode(screenshot_bytes).decode('utf-8')
 
                 # Try JSON extraction first
                 import json
                 import re
                 content = await page.content()
-                
-                # ... (JSON extraction logic same as before, abbreviated for brevity in this tool call, but I need to include it or the file will be broken. 
-                # Actually, I should just wrap the existing logic in the retry loop or keep it simple.)
-                # Let's just add the DOM fallbacks AFTER the existing JSON block, and keep the page load robust.
                 
                 # Check if we got blocked (simple check)
                 if "verify" in await page.title() or "captcha" in content.lower():
