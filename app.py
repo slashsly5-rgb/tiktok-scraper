@@ -107,13 +107,31 @@ if start_btn:
                         col1, col2, col3 = st.columns([1, 2, 2])
                         
                         with col1:
-                            if vid.get('thumbnail'):
+                            # Display Screenshot if available
+                            if vid.get('screenshot_base64'):
+                                import base64
+                                image_bytes = base64.b64decode(vid.get('screenshot_base64'))
+                                st.image(image_bytes, caption="Page Screenshot", use_container_width=True)
+                            elif vid.get('thumbnail'):
                                 st.image(vid['thumbnail'], use_container_width=True)
+                            else:
+                                st.text("No Thumbnail")
+                            
+                            st.markdown(f"[Watch Video]({vid['url']})")
+
+                        with col2:
+                            st.markdown("#### 📊 Stats")
+                            stats = vid.get('stats', {})
+                            s_col1, s_col2 = st.columns(2)
+                            s_col1.metric("Views", stats.get('views', 'N/A'))
+                            s_col2.metric("Likes", stats.get('likes', 'N/A'))
+                            
+                            st.markdown("#### 🏷️ Hashtags")
+                            tags = vid.get('hashtags', [])
+                            if tags:
                                 st.markdown(" ".join([f"`#{t}`" for t in tags]))
                             else:
                                 st.text("No hashtags")
-
-                        with col3:
                             st.markdown("#### 🧠 AI Insights")
                             analysis = vid.get('analysis', {})
                             
