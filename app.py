@@ -122,9 +122,23 @@ if start_btn:
                         with col2:
                             st.markdown("#### 📊 Stats")
                             stats = vid.get('stats', {})
-                            s_col1, s_col2 = st.columns(2)
-                            s_col1.metric("Views", stats.get('views', 'N/A'))
-                            s_col2.metric("Likes", stats.get('likes', 'N/A'))
+                            
+                            # Custom HTML for compact mobile view
+                            views = stats.get('views', 'N/A')
+                            likes = stats.get('likes', 'N/A')
+                            
+                            st.markdown(f"""
+                                <div style="display: flex; gap: 15px;">
+                                    <div>
+                                        <p style="font-size: 12px; margin-bottom: 0; color: #888;">Views</p>
+                                        <p style="font-size: 16px; font-weight: bold; margin-top: 0;">{views}</p>
+                                    </div>
+                                    <div>
+                                        <p style="font-size: 12px; margin-bottom: 0; color: #888;">Likes</p>
+                                        <p style="font-size: 16px; font-weight: bold; margin-top: 0;">{likes}</p>
+                                    </div>
+                                </div>
+                            """, unsafe_allow_html=True)
                             
                             st.markdown("#### 🏷️ Hashtags")
                             tags = vid.get('hashtags', [])
