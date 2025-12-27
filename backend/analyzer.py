@@ -1,5 +1,13 @@
 import os
 from openai import OpenAI
+from typing import Dict, Any, List, Optional
+from database import SupabaseClient
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class Analyzer:
     def __init__(self, api_key=None):
@@ -58,3 +66,122 @@ class Analyzer:
         except Exception as e:
             print(f"Error analyzing video: {e}")
             return {"topic": "Error", "discussion": "Error", "sentiment": "Error", "score": "0"}
+
+
+def analyze_from_database(video_id: str, db_client: SupabaseClient) -> Optional[Dict[str, Any]]:
+    """
+    Analyze a video already in database
+
+    Args:
+        video_id: Video UUID
+        db_client: Database client instance
+
+    Returns:
+        Analysis result dictionary if successful, None otherwise
+    """
+    try:
+        # Fetch video with comments from database
+        video = db_client.get_video_with_comments(video_id)
+        if not video:
+            logger.error(f"Video {video_id} not found in database")
+            return None
+
+        # Extract data for analysis
+        comments = [c["comment_text"] for c in video.get("comments", [])]
+        description = video.get("description", "")
+        hashtags = video.get("hashtags", [])
+
+        # Run analysis
+        analyzer = Analyzer()
+        analysis = analyzer.analyze_video(comments, description, hashtags)
+
+        # Save sentiment to database
+        success = db_client.insert_sentiment(video_id, analysis)
+
+        if success:
+            logger.info(f"Successfully analyzed and saved sentiment for video {video_id}")
+            return analysis
+        else:
+            logger.error(f"Failed to save sentiment for video {video_id}")
+            return None
+
+    except Exception as e:
+        logger.error(f"Error analyzing video {video_id} from database: {e}")
+        return None
+
+
+def batch_analyze_unanalyzed(db_client: SupabaseClient, limit: int = 10) -> Dict[str, Any]:
+    """
+    Analyze videos without sentiment data
+
+    Args:
+        db_client: Database client instance
+        limit: Maximum number of videos to analyze
+
+    Returns:
+        Dictionary with analysis results
+    """
+    try:
+        # Query unanalyzed videos
+        unanalyzed = db_client.get_unanalyzed_videos(limit=limit)
+
+        if not unanalyzed:
+            logger.info("No unanalyzed videos found")
+            return {
+                "total": 0,
+                "analyzed": 0,
+                "failed": 0,
+                "results": []
+            }
+
+        logger.info(f"Found {len(unanalyzed)} unanalyzed videos")
+
+        analyzed_count = 0
+        failed_count = 0
+        results = []
+
+        for video in unanalyzed:
+            video_id = video["id"]
+            try:
+                analysis = analyze_from_database(video_id, db_client)
+                if analysis:
+                    analyzed_count += 1
+                    results.append({
+                        "video_id": video_id,
+                        "status": "success",
+                        "analysis": analysis
+                    })
+                else:
+                    failed_count += 1
+                    results.append({
+                        "video_id": video_id,
+                        "status": "failed",
+                        "error": "Analysis returned None"
+                    })
+            except Exception as e:
+                failed_count += 1
+                logger.error(f"Error analyzing video {video_id}: {e}")
+                results.append({
+                    "video_id": video_id,
+                    "status": "failed",
+                    "error": str(e)
+                })
+
+        logger.info(f"Batch analysis complete: {analyzed_count} analyzed, {failed_count} failed")
+
+        return {
+            "total": len(unanalyzed),
+            "analyzed": analyzed_count,
+            "failed": failed_count,
+            "results": results
+        }
+
+    except Exception as e:
+        logger.error(f"Error in batch analysis: {e}")
+        return {
+            "total": 0,
+            "analyzed": 0,
+            "failed": 0,
+            "error": str(e),
+            "results": []
+        }

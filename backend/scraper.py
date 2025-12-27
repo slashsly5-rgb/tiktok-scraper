@@ -1,6 +1,38 @@
 import asyncio
 from playwright.async_api import async_playwright
 import urllib.parse
+import re
+from typing import Optional, List, Dict, Any
+from database import SupabaseClient
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def extract_tiktok_id(url: str) -> Optional[str]:
+    """
+    Extract TikTok video ID from URL
+
+    Args:
+        url: TikTok video URL
+
+    Returns:
+        Video ID if found, None otherwise
+
+    Example:
+        https://www.tiktok.com/@user/video/1234567890 -> 1234567890
+    """
+    try:
+        match = re.search(r'/video/(\d+)', url)
+        if match:
+            return match.group(1)
+        return None
+    except Exception as e:
+        logger.error(f"Error extracting TikTok ID from {url}: {e}")
+        return None
+
 
 class TikTokScraper:
     def __init__(self, headless=True):
@@ -354,6 +386,119 @@ class TikTokScraper:
                      comments.append(text)
 
         data['comments'] = comments
-        
+
         await page.close()
         return data
+
+
+async def scrape_and_save(keyword: str, max_videos: int, db_client: SupabaseClient, scraper: TikTokScraper = None) -> Dict[str, Any]:
+    """
+    Scrape videos by keyword and save to database
+
+    Args:
+        keyword: Search keyword
+        max_videos: Maximum number of videos to scrape
+        db_client: Database client instance
+        scraper: Optional existing scraper instance
+
+    Returns:
+        Dictionary with scraping results
+    """
+    close_scraper = False
+    if not scraper:
+        scraper = TikTokScraper(headless=True)
+        await scraper.start()
+        close_scraper = True
+
+    try:
+        logger.info(f"Searching for '{keyword}' (max {max_videos} videos)")
+
+        # Search for videos
+        video_urls = await scraper.search_videos(keyword, limit=max_videos)
+
+        if not video_urls:
+            logger.warning(f"No videos found for keyword: {keyword}")
+            return {
+                "keyword": keyword,
+                "found": 0,
+                "scraped": 0,
+                "skipped": 0,
+                "video_ids": []
+            }
+
+        scraped_count = 0
+        skipped_count = 0
+        video_ids = []
+
+        for url in video_urls:
+            # Extract TikTok ID
+            tiktok_id = extract_tiktok_id(url)
+            if not tiktok_id:
+                logger.warning(f"Could not extract ID from URL: {url}")
+                continue
+
+            # Check if already exists in database
+            existing = db_client.get_video_by_tiktok_id(tiktok_id)
+            if existing:
+                logger.info(f"Video {tiktok_id} already exists, skipping")
+                skipped_count += 1
+                video_ids.append(existing["id"])
+                continue
+
+            # Scrape video details
+            logger.info(f"Scraping video {tiktok_id}...")
+            video_data = await scraper.scrape_video_details(url)
+
+            if not video_data:
+                logger.error(f"Failed to scrape video: {url}")
+                continue
+
+            # Prepare data for database
+            video_record = {
+                "tiktok_id": tiktok_id,
+                "url": url,
+                "author_username": video_data.get("author", "Unknown"),
+                "description": video_data.get("description", ""),
+                "views_count": int(video_data.get("stats", {}).get("views", 0)) if isinstance(video_data.get("stats", {}).get("views"), int) else 0,
+                "likes_count": int(video_data.get("stats", {}).get("likes", 0)) if isinstance(video_data.get("stats", {}).get("likes"), int) else 0,
+                "shares_count": int(video_data.get("stats", {}).get("shares", 0)) if isinstance(video_data.get("stats", {}).get("shares"), int) else 0,
+                "comments_count": int(video_data.get("stats", {}).get("comments", 0)) if isinstance(video_data.get("stats", {}).get("comments"), int) else 0,
+                "hashtags": video_data.get("hashtags", []),
+                "screenshot_base64": video_data.get("screenshot_base64"),
+                "search_keyword": keyword
+            }
+
+            # Insert video into database
+            video_id = db_client.insert_video(video_record)
+
+            if video_id:
+                logger.info(f"Saved video {tiktok_id} to database with ID {video_id}")
+                scraped_count += 1
+                video_ids.append(video_id)
+
+                # Insert comments
+                comments = video_data.get("comments", [])
+                if comments:
+                    comment_records = [
+                        {
+                            "author_username": "Unknown",  # TikTok doesn't provide comment author in simple scrape
+                            "comment_text": comment,
+                            "likes_count": 0
+                        }
+                        for comment in comments
+                    ]
+                    db_client.insert_comments(video_id, comment_records)
+            else:
+                logger.error(f"Failed to save video {tiktok_id} to database")
+
+        return {
+            "keyword": keyword,
+            "found": len(video_urls),
+            "scraped": scraped_count,
+            "skipped": skipped_count,
+            "video_ids": video_ids
+        }
+
+    finally:
+        if close_scraper:
+            await scraper.stop()

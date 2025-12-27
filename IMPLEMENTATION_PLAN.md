@@ -64,7 +64,7 @@ tiktok-scraper/
 ### 1.1 Create Database Schema (setup.sql)
 
 **Tables:**
-- `videos` - TikTok video metadata (url, author, description, stats, screenshot, hashtags)
+- `videos` - TikTok video metadata (url, author, description, stats, post_url, transcribed_url, summary, hashtags)
 - `comments` - Video comments with author and likes
 - `sentiment_analysis` - AI analysis results (sentiment, score, topic, key issues)
 
@@ -74,6 +74,8 @@ tiktok-scraper/
 - Performance indexes on tiktok_id, scraped_at, video_id
 - JSONB columns for hashtags and key_issues
 - Unique constraint on tiktok_id to prevent duplicates
+- URL fields for post/screenshot and transcription (stored in Supabase Storage)
+- Summary field for video content summary
 
 ### 1.2 Create Database Module (database.py)
 
