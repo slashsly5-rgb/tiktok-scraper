@@ -155,11 +155,15 @@ erDiagram
         text url
         varchar author_username
         text description
-        text screenshot_url
+        text post_url "Supabase Storage URL for post/screenshot"
+        text transcribed_url "Transcription file URL"
+        text summary "AI-generated video summary"
         bigint views_count
         bigint likes_count
+        bigint shares_count
         bigint comments_count
         jsonb hashtags "Array of hashtags"
+        varchar search_keyword "Keyword used to find video"
         timestamp scraped_at
         timestamp created_at
     }
@@ -366,11 +370,15 @@ CREATE TABLE videos (
     url TEXT NOT NULL,
     author_username VARCHAR(255),
     description TEXT,
-    screenshot_url TEXT,
+    post_url TEXT,
+    transcribed_url TEXT,
+    summary TEXT,
     views_count BIGINT DEFAULT 0,
     likes_count BIGINT DEFAULT 0,
+    shares_count BIGINT DEFAULT 0,
     comments_count BIGINT DEFAULT 0,
     hashtags JSONB,
+    search_keyword VARCHAR(255),
     scraped_at TIMESTAMP DEFAULT NOW(),
     created_at TIMESTAMP DEFAULT NOW()
 );
