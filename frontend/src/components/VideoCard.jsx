@@ -42,9 +42,9 @@ const VideoCard = ({ video }) => {
 
   // Calculate engagement rate
   const calculateEngagementRate = () => {
-    const views = video.views_count || 0
+    const views = video.viewsCount || 0
     if (views === 0) return '0.0'
-    const engagement = (video.likes_count || 0) + (video.comments_count || 0) + (video.shares_count || 0)
+    const engagement = (video.likesCount || 0) + (video.commentsCount || 0) + (video.sharesCount || 0)
     const rate = (engagement / views) * 100
     return rate.toFixed(1)
   }
@@ -54,7 +54,7 @@ const VideoCard = ({ video }) => {
       <div className="video-card-header">
         <div className="video-author">
           <i className="fas fa-user-circle"></i>
-          <span className="author-name">@{video.author_username || 'unknown'}</span>
+          <span className="author-name">@{video.authorUsername || 'unknown'}</span>
         </div>
         {video.sentiment && (
           <span className={`sentiment-badge sentiment-${getSentimentColor(video.sentiment)}`}>
@@ -85,11 +85,11 @@ const VideoCard = ({ video }) => {
           </div>
         )}
 
-        {video.key_issues && video.key_issues.length > 0 && (
+        {video.keyIssues && video.keyIssues.length > 0 && (
           <div className="video-issues">
             <strong>Key Issues:</strong>
             <div className="issues-list">
-              {video.key_issues.map((issue, index) => (
+              {video.keyIssues.map((issue, index) => (
                 <span key={index} className="issue-tag">{issue}</span>
               ))}
             </div>
@@ -101,22 +101,22 @@ const VideoCard = ({ video }) => {
         <div className="video-metrics">
           <div className="metric">
             <i className="fas fa-eye"></i>
-            <span className="metric-value">{formatNumber(video.views_count)}</span>
+            <span className="metric-value">{formatNumber(video.viewsCount)}</span>
             <span className="metric-label">Views</span>
           </div>
           <div className="metric">
             <i className="fas fa-heart"></i>
-            <span className="metric-value">{formatNumber(video.likes_count)}</span>
+            <span className="metric-value">{formatNumber(video.likesCount)}</span>
             <span className="metric-label">Likes</span>
           </div>
           <div className="metric">
             <i className="fas fa-comment"></i>
-            <span className="metric-value">{formatNumber(video.comments_count)}</span>
+            <span className="metric-value">{formatNumber(video.commentsCount)}</span>
             <span className="metric-label">Comments</span>
           </div>
           <div className="metric">
             <i className="fas fa-share"></i>
-            <span className="metric-value">{formatNumber(video.shares_count)}</span>
+            <span className="metric-value">{formatNumber(video.sharesCount)}</span>
             <span className="metric-label">Shares</span>
           </div>
         </div>
@@ -128,7 +128,7 @@ const VideoCard = ({ video }) => {
           </div>
           <div className="video-date">
             <i className="fas fa-calendar"></i>
-            <span>{formatDate(video.scraped_at)}</span>
+            <span>{formatDate(video.scrapedAt)}</span>
           </div>
         </div>
 
@@ -151,21 +151,21 @@ const VideoCard = ({ video }) => {
 VideoCard.propTypes = {
   video: PropTypes.shape({
     id: PropTypes.string,
-    tiktok_id: PropTypes.string,
+    tiktokId: PropTypes.string,
     url: PropTypes.string,
-    author_username: PropTypes.string,
+    authorUsername: PropTypes.string,
     description: PropTypes.string,
-    views_count: PropTypes.number,
-    likes_count: PropTypes.number,
-    comments_count: PropTypes.number,
-    shares_count: PropTypes.number,
+    viewsCount: PropTypes.number,
+    likesCount: PropTypes.number,
+    commentsCount: PropTypes.number,
+    sharesCount: PropTypes.number,
     hashtags: PropTypes.arrayOf(PropTypes.string),
-    search_keyword: PropTypes.string,
-    scraped_at: PropTypes.string,
+    searchKeyword: PropTypes.string,
+    scrapedAt: PropTypes.string,
     sentiment: PropTypes.string,
-    sentiment_score: PropTypes.number,
+    sentimentScore: PropTypes.number,
     summary: PropTypes.string,
-    key_issues: PropTypes.arrayOf(PropTypes.string),
+    keyIssues: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
 }
 

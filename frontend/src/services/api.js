@@ -16,31 +16,33 @@ const apiClient = axios.create({
 export const fetchDashboardData = async (days = 30) => {
   try {
     // Use the new comprehensive dashboard analytics endpoint
+    // Dashboard queries are complex aggregations, so we use a longer timeout
     const response = await apiClient.get('/api/analytics/dashboard', {
-      params: { days }
+      params: { days },
+      timeout: 30000  // 30 seconds for dashboard aggregations
     })
 
     const data = response.data || {}
-    const videoStats = data.video_stats || {}
-    const sentimentStats = data.sentiment_stats || {}
-    const topAuthors = data.top_authors || []
-    const topHashtags = data.top_hashtags || []
-    const topKeywords = data.top_keywords || []
+    const videoStats = data.videoStats || {}
+    const sentimentStats = data.sentimentStats || {}
+    const topAuthors = data.topAuthors || []
+    const topHashtags = data.topHashtags || []
+    const topKeywords = data.topKeywords || []
 
     // Calculate sentiment breakdown percentages
-    const totalAnalyzed = sentimentStats.analyzed_count || 0
-    const breakdown = sentimentStats.sentiment_breakdown || {}
+    const totalAnalyzed = sentimentStats.analyzedCount || 0
+    const breakdown = sentimentStats.sentimentBreakdown || {}
     const positive = breakdown.positive || 0
     const negative = breakdown.negative || 0
     const neutral = breakdown.neutral || 0
-    const veryNegative = breakdown.very_negative || 0
+    const veryNegative = breakdown.veryNegative || 0
 
     const positivePercent = totalAnalyzed > 0 ? Math.round((positive / totalAnalyzed) * 100) : 0
     const negativePercent = totalAnalyzed > 0 ? Math.round(((negative + veryNegative) / totalAnalyzed) * 100) : 0
     const neutralPercent = totalAnalyzed > 0 ? Math.round((neutral / totalAnalyzed) * 100) : 0
 
     // Get average sentiment score (already normalized to 0-1)
-    const avgSentiment = sentimentStats.avg_score || 0
+    const avgSentiment = sentimentStats.avgScore || 0
 
     // Transform API data into dashboard format
     return {
@@ -50,14 +52,14 @@ export const fetchDashboardData = async (days = 30) => {
         type: getSentimentType(avgSentiment)
       },
       summary: totalAnalyzed > 0
-        ? `Analysis based on ${totalAnalyzed} analyzed videos from ${videoStats.total || 0} total videos over the past ${data.period_days || 30} days.`
+        ? `Analysis based on ${totalAnalyzed} analyzed videos from ${videoStats.total || 0} total videos over the past ${data.periodDays || 30} days.`
         : 'No analyzed data available yet. Please scrape and analyze videos first.',
       keyIssues: formatKeyIssues(topHashtags, topKeywords),
       mapRegions: [], // Not available yet
       analytics: {
         reach: {
-          views: videoStats.total_views || 0,
-          likes: videoStats.total_likes || 0
+          views: videoStats.totalViews || 0,
+          likes: videoStats.totalLikes || 0
         },
         sentimentBreakdown: {
           positive: positivePercent,
@@ -65,14 +67,14 @@ export const fetchDashboardData = async (days = 30) => {
           neutral: neutralPercent
         },
         summary: totalAnalyzed > 0
-          ? `Analyzed ${totalAnalyzed} videos with ${videoStats.total_comments || 0} total comments. Avg engagement rate: ${videoStats.avg_engagement_rate || 0}%`
+          ? `Analyzed ${totalAnalyzed} videos with ${videoStats.totalComments || 0} total comments. Avg engagement rate: ${videoStats.avgEngagementRate || 0}%`
           : 'No sentiment analysis data available yet.'
       },
       stats: {
         totalVideos: videoStats.total || 0,
         positiveSentiment: positivePercent,
         trendingTopics: topHashtags.length || 0,
-        criticalIssues: sentimentStats.most_discussed_issues?.length || 0
+        criticalIssues: sentimentStats.mostDiscussedIssues?.length || 0
       },
       topAuthors,
       topHashtags,
@@ -125,7 +127,7 @@ function formatKeyIssues(hashtags, keywords) {
       issues.push({
         name: item.keyword || 'Unknown',
         trend: 'neutral',
-        count: item.video_count || 0
+        count: item.videoCount || 0
       })
     }
   })
@@ -473,7 +475,8 @@ export const fetchVideosWithSentiment = async (days = 30, limit = 50) => {
         days,
         limit,
         include_sentiment: true
-      }
+      },
+      timeout: 20000  // 20 seconds for video queries with sentiment joins
     })
 
     return {

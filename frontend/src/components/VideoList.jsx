@@ -31,9 +31,9 @@ const VideoList = ({ videos, loading, error, onRefresh }) => {
       filtered = filtered.filter(
         (video) =>
           video.description?.toLowerCase().includes(term) ||
-          video.author_username?.toLowerCase().includes(term) ||
+          video.authorUsername?.toLowerCase().includes(term) ||
           video.hashtags?.some((tag) => tag.toLowerCase().includes(term)) ||
-          video.search_keyword?.toLowerCase().includes(term)
+          video.searchKeyword?.toLowerCase().includes(term)
       )
     }
 
@@ -49,14 +49,14 @@ const VideoList = ({ videos, loading, error, onRefresh }) => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'recent':
-          return new Date(b.scraped_at) - new Date(a.scraped_at)
+          return new Date(b.scrapedAt) - new Date(a.scrapedAt)
         case 'views':
-          return (b.views_count || 0) - (a.views_count || 0)
+          return (b.viewsCount || 0) - (a.viewsCount || 0)
         case 'likes':
-          return (b.likes_count || 0) - (a.likes_count || 0)
+          return (b.likesCount || 0) - (a.likesCount || 0)
         case 'engagement':
-          const engA = ((a.likes_count || 0) + (a.comments_count || 0) + (a.shares_count || 0)) / (a.views_count || 1)
-          const engB = ((b.likes_count || 0) + (b.comments_count || 0) + (b.shares_count || 0)) / (b.views_count || 1)
+          const engA = ((a.likesCount || 0) + (a.commentsCount || 0) + (a.sharesCount || 0)) / (a.viewsCount || 1)
+          const engB = ((b.likesCount || 0) + (b.commentsCount || 0) + (b.sharesCount || 0)) / (b.viewsCount || 1)
           return engB - engA
         default:
           return 0
@@ -288,21 +288,21 @@ VideoList.propTypes = {
   videos: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
-      tiktok_id: PropTypes.string,
+      tiktokId: PropTypes.string,
       url: PropTypes.string,
-      author_username: PropTypes.string,
+      authorUsername: PropTypes.string,
       description: PropTypes.string,
-      views_count: PropTypes.number,
-      likes_count: PropTypes.number,
-      comments_count: PropTypes.number,
-      shares_count: PropTypes.number,
+      viewsCount: PropTypes.number,
+      likesCount: PropTypes.number,
+      commentsCount: PropTypes.number,
+      sharesCount: PropTypes.number,
       hashtags: PropTypes.arrayOf(PropTypes.string),
-      search_keyword: PropTypes.string,
-      scraped_at: PropTypes.string,
+      searchKeyword: PropTypes.string,
+      scrapedAt: PropTypes.string,
       sentiment: PropTypes.string,
-      sentiment_score: PropTypes.number,
+      sentimentScore: PropTypes.number,
       summary: PropTypes.string,
-      key_issues: PropTypes.arrayOf(PropTypes.string),
+      keyIssues: PropTypes.arrayOf(PropTypes.string),
     })
   ),
   loading: PropTypes.bool,

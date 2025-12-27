@@ -128,6 +128,24 @@ def transform_video(video: Dict[str, Any]) -> Dict[str, Any]:
         if db_field in video:
             transformed[frontend_field] = video[db_field]
 
+    # Parse hashtags from JSON string to array of tag names
+    if "hashtags" in transformed:
+        import json
+        hashtags_value = transformed["hashtags"]
+        if isinstance(hashtags_value, str):
+            try:
+                # Parse JSON string
+                parsed = json.loads(hashtags_value)
+                if isinstance(parsed, list):
+                    # Extract tag names from objects like [{"id":"123","name":"tag"}]
+                    transformed["hashtags"] = [tag.get("name", tag) if isinstance(tag, dict) else tag for tag in parsed]
+                else:
+                    transformed["hashtags"] = []
+            except (json.JSONDecodeError, AttributeError):
+                transformed["hashtags"] = []
+        elif not isinstance(hashtags_value, list):
+            transformed["hashtags"] = []
+
     # Handle nested sentiment data if present
     if "sentiment" in video and isinstance(video["sentiment"], dict):
         transformed["sentiment"] = transform_sentiment(video["sentiment"])

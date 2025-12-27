@@ -11,6 +11,7 @@
   padding: 20px 0;
   z-index: 1000;
   box-shadow: 4px 0 12px var(--shadow);
+  overflow: visible;
 }
 
 .sidebar-logo {
@@ -19,6 +20,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  overflow: visible;
 }
 
 .logo-container {
@@ -27,6 +29,7 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  overflow: visible;
 }
 
 .logo-image {
@@ -45,8 +48,10 @@
 }
 
 .sarawak-flag {
-  max-height: 180px;
+  max-height: 120px;
   border-radius: 4px;
+  width: auto;
+  max-width: none;
 }
 
 .logo-badge {
