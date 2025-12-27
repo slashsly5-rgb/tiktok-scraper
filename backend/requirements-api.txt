@@ -1,0 +1,14 @@
+# Flask API dependencies
+flask==3.0.0
+flask-cors==4.0.0
+
+# Database - with compatible versions
+supabase==2.9.1
+psycopg2-binary==2.9.9
+httpx==0.27.2
+websockets>=13
+
+# Core dependencies
+python-dotenv==1.0.0
+playwright==1.40.0
+openai==1.6.1
