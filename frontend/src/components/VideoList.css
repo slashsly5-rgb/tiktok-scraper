@@ -32,17 +32,18 @@
 }
 
 .header-title h2 i {
-  color: #007bff;
+  color: var(--accent-gold);
   font-size: 1.125rem;
 }
 
 .video-count {
-  background-color: #f0f0f0;
+  background-color: var(--bg-cream);
   padding: 0.25rem 0.625rem;
   border-radius: 16px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
+  border: 1px solid var(--accent-gold);
 }
 
 .header-actions {
@@ -55,7 +56,7 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.4rem 0.875rem;
-  background-color: #007bff;
+  background-color: var(--accent-gold);
   color: white;
   border: none;
   border-radius: 4px;
@@ -66,8 +67,9 @@
 }
 
 .btn-refresh:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #d4a574;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(243, 156, 18, 0.3);
 }
 
 .btn-refresh:disabled {
@@ -77,11 +79,12 @@
 
 /* Controls */
 .video-list-controls {
-  background: white;
+  background: var(--bg-white);
   padding: 0.875rem;
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px var(--shadow);
   margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
 }
 
 .search-box {
@@ -94,22 +97,25 @@
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #999;
+  color: var(--accent-gold);
   font-size: 0.875rem;
 }
 
 .search-box input {
   width: 100%;
   padding: 0.5rem 2.5rem 0.5rem 2.25rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.8125rem;
-  transition: border-color 0.3s ease;
+  background-color: var(--bg-cream);
+  color: var(--text-primary);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .search-box input:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--accent-gold);
+  background-color: var(--bg-white);
 }
 
 .clear-search {
@@ -155,24 +161,26 @@
 }
 
 .filter-group label i {
-  color: #007bff;
+  color: var(--accent-gold);
   font-size: 0.75rem;
 }
 
 .filter-group select {
   flex: 1;
   padding: 0.4rem 0.625rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.8125rem;
-  background-color: white;
+  background-color: var(--bg-cream);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .filter-group select:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--accent-gold);
+  background-color: var(--bg-white);
 }
 
 /* Video Grid */
@@ -196,8 +204,8 @@
 .spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--accent-gold);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 0.75rem;
@@ -294,8 +302,8 @@
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
   color: white;
 }
 
@@ -314,10 +322,10 @@
   min-width: 32px;
   height: 32px;
   padding: 0.375rem;
-  background-color: white;
-  border: 1px solid #e0e0e0;
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  color: #333;
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 0.8125rem;
   cursor: pointer;
@@ -325,13 +333,13 @@
 }
 
 .pagination-number:hover {
-  background-color: #f0f0f0;
-  border-color: #007bff;
+  background-color: var(--bg-cream);
+  border-color: var(--accent-gold);
 }
 
 .pagination-number.active {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
   color: white;
 }
 

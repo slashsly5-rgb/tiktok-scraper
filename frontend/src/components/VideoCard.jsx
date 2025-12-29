@@ -49,18 +49,30 @@ const VideoCard = ({ video }) => {
     return rate.toFixed(1)
   }
 
+  // Get TikTok URL from various possible field names or construct from tiktokId
+  const getTikTokUrl = () => {
+    // Try to get URL from various fields
+    const directUrl = video.url || video.videoUrl || video.postUrl
+    if (directUrl) return directUrl
+
+    // Construct URL from tiktokId if available
+    if (video.tiktokId) {
+      return `https://www.tiktok.com/@${video.authorUsername}/video/${video.tiktokId}`
+    }
+
+    return null
+  }
+
   return (
     <div className="video-card">
       <div className="video-card-header">
         <div className="video-author">
           <i className="fas fa-user-circle"></i>
-          <span className="author-name">@{video.authorUsername || 'unknown'}</span>
+          <span className="author-name">@{video.authorUsername || video.author_username || 'unknown'}</span>
         </div>
-        {video.sentiment && (
-          <span className={`sentiment-badge sentiment-${getSentimentColor(video.sentiment)}`}>
-            {getSentimentLabel(video.sentiment)}
-          </span>
-        )}
+        <span className={`sentiment-badge sentiment-${getSentimentColor(video.sentiment)}`}>
+          {getSentimentLabel(video.sentiment)}
+        </span>
       </div>
 
       <div className="video-card-body">
@@ -90,7 +102,9 @@ const VideoCard = ({ video }) => {
             <strong>Key Issues:</strong>
             <div className="issues-list">
               {video.keyIssues.map((issue, index) => (
-                <span key={index} className="issue-tag">{issue}</span>
+                <span key={index} className="issue-tag">
+                  {typeof issue === 'string' ? issue : issue.title}
+                </span>
               ))}
             </div>
           </div>
@@ -132,17 +146,18 @@ const VideoCard = ({ video }) => {
           </div>
         </div>
 
-        {video.url && (
-          <a
-            href={video.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="video-link"
-          >
-            <i className="fab fa-tiktok"></i>
-            View on TikTok
-          </a>
-        )}
+        <a
+          href={getTikTokUrl() || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="video-link"
+          style={{
+            display: getTikTokUrl() ? 'flex' : 'none'
+          }}
+        >
+          <i className="fab fa-tiktok"></i>
+          <span>View on TikTok</span>
+        </a>
       </div>
     </div>
   )
@@ -165,7 +180,16 @@ VideoCard.propTypes = {
     sentiment: PropTypes.string,
     sentimentScore: PropTypes.number,
     summary: PropTypes.string,
-    keyIssues: PropTypes.arrayOf(PropTypes.string),
+    keyIssues: PropTypes.arrayOf(
+      PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          title: PropTypes.string,
+          description: PropTypes.string,
+          evidence: PropTypes.arrayOf(PropTypes.string)
+        })
+      ])
+    ),
   }).isRequired,
 }
 
