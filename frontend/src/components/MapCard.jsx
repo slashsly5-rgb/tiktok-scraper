@@ -53,17 +53,6 @@ const MapCard = ({ regions }) => {
       <div className="map-timestamp">
         Last updated at {new Date().toLocaleString()}
       </div>
-
-      <div className="map-hotspots">
-        <h4 className="hotspots-title">Hotspots</h4>
-        <ul className="hotspots-list">
-          {regions.slice(0, 3).map((region, index) => (
-            <li key={index}>
-              <strong>{region.name}:</strong> {region.description}
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }

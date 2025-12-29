@@ -26,7 +26,7 @@ const AnalyticsCard = ({ analytics }) => {
               analytics.sentimentBreakdown.negative,
               analytics.sentimentBreakdown.neutral
             ],
-            backgroundColor: ['#2ECC71', '#E74C3C', '#95A5A6'],
+            backgroundColor: ['#2ECC71', '#E74C3C', '#F39C12'],
             borderWidth: 0,
             hoverOffset: 10
           }]
@@ -67,7 +67,7 @@ const AnalyticsCard = ({ analytics }) => {
     <div className="analytics-card fade-in">
       <div className="analytics-header">
         <div className="analytics-image">
-          <i className="fas fa-video" style={{ fontSize: '40px', color: '#95A5A6' }}></i>
+          <i className="fas fa-video" style={{ fontSize: '40px', color: '#F39C12' }}></i>
         </div>
         <div className="analytics-meta">
           <h4 className="analytics-title">Reach</h4>
@@ -78,19 +78,19 @@ const AnalyticsCard = ({ analytics }) => {
       </div>
 
       <div className="donut-chart-container">
-        <canvas ref={chartRef} width="200" height="200"></canvas>
+        <canvas ref={chartRef} width="120" height="120"></canvas>
         <div className="chart-legend">
           <div className="legend-item">
             <span className="legend-color positive"></span>
-            <span>{analytics.sentimentBreakdown.positive}% POSITIVE COMMENTS</span>
+            <span>{analytics.sentimentBreakdown.positive}% Positive</span>
           </div>
           <div className="legend-item">
             <span className="legend-color negative"></span>
-            <span>{analytics.sentimentBreakdown.negative}% NEGATIVE COMMENTS</span>
+            <span>{analytics.sentimentBreakdown.negative}% Negative</span>
           </div>
           <div className="legend-item">
             <span className="legend-color neutral"></span>
-            <span>{analytics.sentimentBreakdown.neutral}% NEUTRAL COMMENTS</span>
+            <span>{analytics.sentimentBreakdown.neutral}% Neutral</span>
           </div>
         </div>
       </div>
