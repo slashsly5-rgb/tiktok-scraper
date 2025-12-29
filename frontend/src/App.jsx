@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
 import ChatInterface from './components/ChatInterface'
+import AssistantPage from './pages/AssistantPage'
 import { fetchDashboardData, fetchVideosWithSentiment } from './services/api'
 import './App.css'
 
@@ -58,22 +60,41 @@ function App() {
     setSelectedDays(days)
   }
 
+  // Build filters object for chat context
+  const chatFilters = {
+    days: selectedDays
+    // Can add: keywords: [...], sentiment: "positive", etc.
+  }
+
   return (
-    <div className="app">
-      <Sidebar />
-      <Dashboard
-        data={dashboardData}
-        videos={videos}
-        loading={loading}
-        videosLoading={videosLoading}
-        error={error}
-        videosError={videosError}
-        selectedDays={selectedDays}
-        onTimelineChange={handleTimelineChange}
-        onRefreshVideos={loadVideos}
-      />
-      <ChatInterface />
-    </div>
+    <Router>
+      <div className="app">
+        <Sidebar />
+
+        <Routes>
+          <Route path="/" element={
+            <>
+              <Dashboard
+                data={dashboardData}
+                videos={videos}
+                loading={loading}
+                videosLoading={videosLoading}
+                error={error}
+                videosError={videosError}
+                selectedDays={selectedDays}
+                onTimelineChange={handleTimelineChange}
+                onRefreshVideos={loadVideos}
+              />
+              <ChatInterface filters={chatFilters} />
+            </>
+          } />
+
+          <Route path="/assistant" element={
+            <AssistantPage filters={chatFilters} />
+          } />
+        </Routes>
+      </div>
+    </Router>
   )
 }
 

@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import './Sidebar.css'
 import projectSLogo from '../assets/ProjectS_Logo.png'
 import sarawakFlag from '../assets/SarawakFlag.png'
 
 const Sidebar = () => {
-  const [activeItem, setActiveItem] = useState('home')
+  const location = useLocation()
 
   const navItems = [
-    { id: 'home', icon: 'fa-home', label: 'Analytics' },
-    { id: 'assistant', icon: 'fa-robot', label: 'Assistant' },
+    { id: 'home', icon: 'fa-home', label: 'Analytics', path: '/' },
+    { id: 'assistant', icon: 'fa-robot', label: 'AI Assistant', path: '/assistant' },
     // { id: 'analytics', icon: 'fa-chart-line', label: 'Analytics' },
     // { id: 'news', icon: 'fa-newspaper', label: 'News' },
     // { id: 'settings', icon: 'fa-cog', label: 'Settings' },
@@ -25,15 +25,14 @@ const Sidebar = () => {
 
       <nav className="sidebar-nav">
         {navItems.map(item => (
-          <a
+          <Link
             key={item.id}
-            href={`#${item.id}`}
-            className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
-            onClick={() => setActiveItem(item.id)}
+            to={item.path}
+            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
           >
             <i className={`fas ${item.icon} nav-icon`}></i>
             <span className="nav-label">{item.label}</span>
-          </a>
+          </Link>
         ))}
       </nav>
 
