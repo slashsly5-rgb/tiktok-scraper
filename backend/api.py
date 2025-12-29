@@ -18,6 +18,7 @@ from config import Config
 from database import SupabaseClient
 from scraper import scrape_and_save
 from analyzer import Analyzer
+from mistral_chat import MistralChatService
 from transform import (
     transform_video,
     transform_videos,
@@ -57,6 +58,18 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize database: {e}")
     db = None
+
+# Mistral chat service
+try:
+    if db:
+        chat_service = MistralChatService(db)
+        logger.info("Mistral chat service initialized")
+    else:
+        chat_service = None
+        logger.warning("Chat service disabled - database not available")
+except Exception as e:
+    logger.error(f"Failed to initialize chat service: {e}")
+    chat_service = None
 
 
 # ============================================
@@ -1255,6 +1268,130 @@ def get_sentiment_by_score_endpoint():
 
     except Exception as e:
         logger.error(f"Error fetching sentiment by score: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# ============================================
+# Chat AI Assistant Endpoints
+# ============================================
+
+@app.route('/api/chat', methods=['POST'])
+def chat_endpoint():
+    """
+    Send message to AI chat assistant with optional data context
+
+    Body:
+        {
+            "session_id": "uuid-string",  // Required
+            "message": "User question",    // Required
+            "filters": {                   // Optional
+                "days": 30,
+                "keywords": ["keyword1"],
+                "sentiment": "positive"
+            }
+        }
+
+    Returns:
+        {
+            "response": "AI response",
+            "session_id": "uuid-string",
+            "message_count": 5,
+            "context_used": true
+        }
+    """
+    try:
+        if not chat_service:
+            return jsonify({"error": "Chat service not available"}), 503
+
+        data = request.json
+
+        if not data:
+            return jsonify({"error": "Request body required"}), 400
+
+        session_id = data.get("session_id")
+        message = data.get("message")
+        filters = data.get("filters")
+
+        if not session_id:
+            return jsonify({"error": "session_id is required"}), 400
+
+        if not message or not message.strip():
+            return jsonify({"error": "message is required and cannot be empty"}), 400
+
+        # Validate filters if provided
+        if filters and not isinstance(filters, dict):
+            return jsonify({"error": "filters must be an object"}), 400
+
+        logger.info(f"Chat request - session: {session_id}, message length: {len(message)}, filters: {filters}")
+
+        # Call chat service
+        result = chat_service.chat(session_id, message, filters)
+
+        # Check for errors
+        if "error" in result:
+            status_code = 503 if result["error"] == "service_unavailable" else 500
+            return jsonify(result), status_code
+
+        return jsonify(result)
+
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/chat/history/<session_id>', methods=['GET'])
+def get_chat_history_endpoint(session_id):
+    """
+    Get conversation history for a session
+
+    Returns:
+        {
+            "session_id": "uuid",
+            "history": [
+                {"role": "user", "content": "..."},
+                {"role": "assistant", "content": "..."}
+            ],
+            "message_count": 10
+        }
+    """
+    try:
+        if not chat_service:
+            return jsonify({"error": "Chat service not available"}), 503
+
+        history = chat_service.get_conversation_history(session_id)
+
+        return jsonify({
+            "session_id": session_id,
+            "history": history,
+            "message_count": len(history)
+        })
+
+    except Exception as e:
+        logger.error(f"Error getting chat history: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/chat/clear/<session_id>', methods=['DELETE'])
+def clear_chat_endpoint(session_id):
+    """
+    Clear conversation history for a session
+
+    Returns:
+        {"success": true}
+    """
+    try:
+        if not chat_service:
+            return jsonify({"error": "Chat service not available"}), 503
+
+        success = chat_service.clear_session(session_id)
+
+        return jsonify({
+            "success": success,
+            "message": "Session cleared" if success else "Session not found"
+        })
+
+    except Exception as e:
+        logger.error(f"Error clearing chat: {e}")
         return jsonify({"error": str(e)}), 500
 
 

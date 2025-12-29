@@ -27,6 +27,18 @@ class Config:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
     # ============================================
+    # Mistral AI Configuration
+    # ============================================
+    MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "rw2mHuq80f2XcRZG8tQhy2HnM1agj5wR")
+    MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-medium-latest")
+    MISTRAL_MAX_TOKENS = int(os.getenv("MISTRAL_MAX_TOKENS", "1000"))
+    MISTRAL_TEMPERATURE = float(os.getenv("MISTRAL_TEMPERATURE", "0.7"))
+
+    # Chat session configuration
+    CHAT_SESSION_TIMEOUT = int(os.getenv("CHAT_SESSION_TIMEOUT", "3600"))  # 1 hour in seconds
+    MAX_CHAT_HISTORY_LENGTH = int(os.getenv("MAX_CHAT_HISTORY_LENGTH", "50"))  # max messages per session
+
+    # ============================================
     # Apify Configuration (Optional)
     # ============================================
     APIFY_API_TOKEN = os.getenv("APIFY_API_TOKEN")
@@ -122,6 +134,7 @@ class Config:
         return {
             "supabase_configured": bool(cls.SUPABASE_URL),
             "openai_configured": bool(cls.OPENAI_API_KEY),
+            "mistral_configured": bool(cls.MISTRAL_API_KEY),
             "apify_configured": bool(cls.APIFY_API_TOKEN),
             "api_host": cls.API_HOST,
             "api_port": cls.API_PORT,
