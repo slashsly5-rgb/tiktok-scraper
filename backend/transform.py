@@ -77,7 +77,12 @@ VIDEO_FIELD_MAP = {
     "scraped_at": "scrapedAt",
     "created_at": "createdAt",
     # Computed fields
-    "engagement_rate": "engagementRate"
+    "engagement_rate": "engagementRate",
+    # Sentiment fields (when flattened from sentiment_analysis join)
+    "sentiment": "sentiment",
+    "sentiment_score": "sentimentScore",
+    "topic": "topic",
+    "key_issues": "keyIssues"
 }
 
 COMMENT_FIELD_MAP = {

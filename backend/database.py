@@ -122,8 +122,13 @@ class SupabaseClient:
             if include_sentiment and videos:
                 for video in videos:
                     sentiment_data = video.get('sentiment_analysis')
+                    logger.debug(f"Video {video.get('id')}: sentiment_data type={type(sentiment_data)}, value={sentiment_data}")
                     if sentiment_data:
                         # sentiment_analysis is returned as an object (dict), not an array
+                        # Supabase returns as a list with one item when using join
+                        if isinstance(sentiment_data, list) and len(sentiment_data) > 0:
+                            sentiment_data = sentiment_data[0]
+
                         if isinstance(sentiment_data, dict):
                             video['sentiment'] = sentiment_data.get('sentiment')
                             video['sentiment_score'] = sentiment_data.get('sentiment_score')
@@ -1356,20 +1361,37 @@ class SupabaseClient:
 
                 if isinstance(key_issues, list):
                     for issue in key_issues:
-                        issue_stats[issue]["mention_count"] += 1
-                        issue_stats[issue]["scores"].append(score)
-                        if video_id not in issue_stats[issue]["video_ids"]:
-                            issue_stats[issue]["video_ids"].append(video_id)
+                        # Extract title from issue object or use string directly
+                        if isinstance(issue, dict):
+                            issue_title = issue.get('title', str(issue))
+                        else:
+                            issue_title = str(issue)
+
+                        issue_stats[issue_title]["mention_count"] += 1
+                        issue_stats[issue_title]["scores"].append(score)
+                        if video_id not in issue_stats[issue_title]["video_ids"]:
+                            issue_stats[issue_title]["video_ids"].append(video_id)
 
             # Convert to list
             top_issues = []
             for issue, stats in issue_stats.items():
                 avg_sentiment = round(sum(stats["scores"]) / len(stats["scores"]), 2) if stats["scores"] else 0
+
+                # Determine trend based on average sentiment
+                # Score > 6: up trend, 4-6: neutral, < 4: down trend
+                if avg_sentiment > 6:
+                    trend = "up"
+                elif avg_sentiment < 4:
+                    trend = "down"
+                else:
+                    trend = "neutral"
+
                 top_issues.append({
                     "issue": issue,
                     "mention_count": stats["mention_count"],
                     "avg_sentiment": avg_sentiment,
-                    "video_count": len(stats["video_ids"])
+                    "video_count": len(stats["video_ids"]),
+                    "trend": trend
                 })
 
             # Sort by mention count
