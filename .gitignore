@@ -49,3 +49,9 @@ output/
 # Temporary files
 tmp/
 temp/
+
+# Tunnel binaries and temp files
+ngrok.exe
+ngrok.zip
+nul
+*.tmp
