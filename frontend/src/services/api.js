@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+// Use empty baseURL to enable Vite proxy for all requests
+// When VITE_API_URL is set (production), use it. Otherwise use relative URLs (development)
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -451,14 +453,53 @@ export const fetchTopIssues = async (days = 7, limit = 10) => {
 }
 
 /**
- * Send chat message to AI assistant
+ * Send chat message to Mistral AI assistant with context filters
  */
-export const sendChatMessage = async (message) => {
+export const sendChatMessage = async (sessionId, message, filters = null) => {
   try {
-    const response = await apiClient.post('/chat', { message })
+    const payload = {
+      session_id: sessionId,
+      message: message
+    }
+
+    // Add filters if provided
+    if (filters) {
+      payload.filters = filters
+    }
+
+    const response = await apiClient.post('/api/chat', payload, {
+      timeout: 30000  // 30 seconds for AI processing
+    })
+
     return response.data
   } catch (error) {
     console.error('Error sending chat message:', error)
+    throw error
+  }
+}
+
+/**
+ * Get conversation history for a session
+ */
+export const getChatHistory = async (sessionId) => {
+  try {
+    const response = await apiClient.get(`/api/chat/history/${sessionId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching chat history:', error)
+    throw error
+  }
+}
+
+/**
+ * Clear chat session
+ */
+export const clearChatSession = async (sessionId) => {
+  try {
+    const response = await apiClient.delete(`/api/chat/clear/${sessionId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error clearing chat session:', error)
     throw error
   }
 }
