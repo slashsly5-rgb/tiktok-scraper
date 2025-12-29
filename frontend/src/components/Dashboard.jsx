@@ -1,9 +1,11 @@
 import SummaryCard from './SummaryCard'
-import MapCard from './MapCard'
+import NewsMediaCard from './NewsMediaCard'
 import AnalyticsCard from './AnalyticsCard'
 import StatsRow from './StatsRow'
 import TimelineSelector from './TimelineSelector'
 import VideoList from './VideoList'
+import SentimentOverview from './SentimentOverview'
+import ConstituentAnalysis from './ConstituentAnalysis'
 import './Dashboard.css'
 
 const Dashboard = ({
@@ -59,28 +61,30 @@ const Dashboard = ({
         onTimelineChange={onTimelineChange}
       />
 
-      {/* Dashboard Header */}
-      <header className="dashboard-header">
-        <div className="header-section">
+      {/* Main Dashboard Sections - Single Row */}
+      <div className="dashboard-sections-row">
+        {/* Overview of Public Sentiment Section */}
+        <div className="dashboard-section">
           <h2 className="section-title">Overview of Public Sentiment</h2>
+          <div className="section-cards">
+            <SummaryCard
+              sentiment={dashboardData.sentiment}
+              summary={dashboardData.summary}
+              keyIssues={dashboardData.keyIssues}
+              videos={videos}
+            />
+            <SentimentOverview videos={videos} />
+          </div>
         </div>
-        <div className="header-section">
-          <h2 className="section-title">Public Sentiment by Constituents</h2>
-        </div>
-        <div className="header-section">
-          <h2 className="section-title">News and Social Media</h2>
-        </div>
-      </header>
 
-      {/* Dashboard Grid */}
-      <div className="dashboard-grid">
-        <SummaryCard
-          sentiment={dashboardData.sentiment}
-          summary={dashboardData.summary}
-          keyIssues={dashboardData.keyIssues}
-        />
-        <MapCard regions={dashboardData.mapRegions} />
-        <AnalyticsCard analytics={dashboardData.analytics} />
+        {/* News and Social Media Section */}
+        <div className="dashboard-section">
+          <h2 className="section-title">News and Social Media</h2>
+          <div className="section-cards">
+            <AnalyticsCard analytics={dashboardData.analytics} />
+            <NewsMediaCard videos={videos} />
+          </div>
+        </div>
       </div>
 
       {/* Stats Row */}
