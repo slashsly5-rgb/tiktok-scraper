@@ -29,7 +29,7 @@ class Config:
     # ============================================
     # Mistral AI Configuration
     # ============================================
-    MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "rw2mHuq80f2XcRZG8tQhy2HnM1agj5wR")
+    MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
     MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-medium-latest")
     MISTRAL_MAX_TOKENS = int(os.getenv("MISTRAL_MAX_TOKENS", "1000"))
     MISTRAL_TEMPERATURE = float(os.getenv("MISTRAL_TEMPERATURE", "0.7"))
