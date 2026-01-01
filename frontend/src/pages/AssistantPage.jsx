@@ -14,14 +14,12 @@ const AssistantPage = ({ filters }) => {
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
-    // Initialize session
     const sid = getSessionId()
     setSessionId(sid)
     loadHistory(sid)
   }, [])
 
   useEffect(() => {
-    // Auto-scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
@@ -32,7 +30,6 @@ const AssistantPage = ({ filters }) => {
       setMessages(response.history || [])
     } catch (err) {
       console.error('Error loading history:', err)
-      // If no history exists yet, that's fine
       setMessages([])
     } finally {
       setInitialLoad(false)
@@ -47,19 +44,14 @@ const AssistantPage = ({ filters }) => {
     setLoading(true)
     setError(null)
 
-    // Optimistically add user message
     setMessages(prev => [...prev, { role: 'user', content: userMessage }])
 
     try {
       const response = await sendChatMessage(sessionId, userMessage, filters)
-
-      // Add assistant response
       setMessages(prev => [...prev, { role: 'assistant', content: response.response }])
     } catch (err) {
       console.error('Chat error:', err)
       setError(err.response?.data?.error || 'Failed to send message')
-
-      // Remove optimistic user message on error
       setMessages(prev => prev.slice(0, -1))
     } finally {
       setLoading(false)
@@ -73,7 +65,6 @@ const AssistantPage = ({ filters }) => {
       await clearChatSession(sessionId)
       clearSessionId()
 
-      // Reinitialize
       const newSessionId = getSessionId()
       setSessionId(newSessionId)
       setMessages([])
@@ -134,7 +125,9 @@ const AssistantPage = ({ filters }) => {
                 </div>
                 <div className="message-text">
                   {msg.role === 'assistant' ? (
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <div>
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
                   ) : (
                     msg.content
                   )}

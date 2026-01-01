@@ -1,9 +1,18 @@
 .assistant-page {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
   background: var(--bg-secondary, #f5f5f0);
-  margin-left: 80px; /* Account for sidebar width */
+}
+
+/* Responsive - match sidebar mobile width */
+@media (max-width: 767px) {
+  .assistant-page {
+    margin-left: 60px;
+    width: calc(100% - 60px);
+  }
 }
 
 .assistant-header {
